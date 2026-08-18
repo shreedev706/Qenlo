@@ -45,9 +45,9 @@ Each folder here is its own runnable app with its own `package.json`. If you're 
 
 | App | What it is | Stack |
 |---|---|---|
-| **`apps/web`** | The main public Qenlo website — homepage, tutorials, category pages (AI, Robotics, Software, Games, Windows, Linux) | Next.js, Tailwind |
-| **`apps/admin`** | Internal admin dashboard — content management, moderation, user management | Next.js |
-| **`apps/api`** | Backend server — REST endpoints, business logic, talks to the database | Express.js |
+| **`apps/frontend`** | The main public Qenlo website — homepage, tutorials, category pages (AI, Robotics, Software, Games, Windows, Linux) | Next.js, Tailwind |
+| **`apps/dashboard`** | Internal admin dashboard — content management, moderation, user management | Next.js |
+| **`apps/backend`** | Backend server — REST endpoints, business logic, talks to the database | Express.js |
 | **`apps/developer`** | Developer portal — for third-party developers submitting/listing their apps (future marketplace feature) | Next.js |
 | **`apps/docs`** | Documentation site | Next.js |
 | **`apps/status`** | Public status/uptime page | Next.js |
