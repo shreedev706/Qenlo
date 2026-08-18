@@ -1,159 +1,128 @@
-# Turborepo starter
+# Qenlo Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+> Learn. Build. Solve.
 
-## Using this example
+Qenlo is a technology learning platform — tutorials, installs, and troubleshooting guides for AI, Robotics & IoT, Software, Games, Windows, and Linux. This repo is a **Turborepo + pnpm workspace monorepo** containing every app and shared package that makes up the Qenlo product.
 
-Run the following command:
+If you're new here, read this file top to bottom before touching code — it tells you exactly where to work and what not to duplicate.
 
-```sh
-npx create-turbo@latest
+---
+
+## Quick start
+
+```bash
+pnpm install       # installs deps for every app/package
+pnpm dev            # runs all apps in dev mode via Turborepo
+pnpm dev --filter=web     # run only the main website
+pnpm dev --filter=api     # run only the backend
+pnpm build          # builds everything
+pnpm lint            # lints everything
 ```
 
-## What's inside?
+Turborepo caches tasks and only rebuilds what changed, so prefer `pnpm dev --filter=<app>` over running every app at once when you're only working on one.
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
+## Folder structure
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```
+Qenlo/
+├── apps/          → deployable applications (frontend + backend)
+├── packages/      → shared code used across apps
+├── infra/         → infrastructure / deployment config
+├── scripts/       → repo-wide helper scripts
+├── tests/         → cross-app / integration tests
+├── tooling/        → shared dev tooling config
+├── turbo.json     → Turborepo pipeline config
+└── pnpm-workspace.yaml → defines which folders are workspaces
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
-```
+## `apps/` — things that get deployed
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Each folder here is its own runnable app with its own `package.json`. If you're building a *feature*, it almost always lives in one of these.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+| App | What it is | Stack |
+|---|---|---|
+| **`apps/web`** | The main public Qenlo website — homepage, tutorials, category pages (AI, Robotics, Software, Games, Windows, Linux) | Next.js, Tailwind |
+| **`apps/admin`** | Internal admin dashboard — content management, moderation, user management | Next.js |
+| **`apps/api`** | Backend server — REST endpoints, business logic, talks to the database | Express.js |
+| **`apps/developer`** | Developer portal — for third-party developers submitting/listing their apps (future marketplace feature) | Next.js |
+| **`apps/docs`** | Documentation site | Next.js |
+| **`apps/status`** | Public status/uptime page | Next.js |
 
-```sh
-turbo build --filter=docs
-```
+**Rule of thumb:** if you're changing something a *user* sees on qenlo.tech, you're in `apps/web`. If you're changing server logic, routes, or data handling, you're in `apps/api`. If it's internal-only tooling for managing the site, it's `apps/admin`.
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+## `packages/` — shared code, imported by apps
 
-### Develop
+Nothing in here runs on its own — these are libraries consumed by the apps above. **If you find yourself copy-pasting a component, type, or utility function between two apps, it belongs in here instead.**
 
-To develop all apps and packages, run the following command:
+| Package | Purpose |
+|---|---|
+| **`ui`** | Shared component library (`Button`, `Card`, `Code`, etc.) — used by `web`, `admin`, `developer` so UI stays consistent |
+| **`auth`** | Authentication logic (shared between `api` and any app needing session/user info) |
+| **`database`** | Database client, schema, and query logic |
+| **`email`** | Email sending logic (transactional emails, newsletter, etc.) |
+| **`storage`** | File/media storage handling |
+| **`search`** | Search functionality shared across apps |
+| **`analytics`** | Analytics/tracking helpers |
+| **`core`** | Core shared business logic |
+| **`sdk`** | SDK for interacting with the Qenlo API from other apps |
+| **`utils`** | General-purpose utility functions |
+| **`validation`** | Shared validation schemas (form inputs, API payloads) |
+| **`constants`** | Shared constant values (enums, config values) used across apps |
+| **`types`** | Shared TypeScript types/interfaces |
+| **`env`** | Environment variable handling/validation |
+| **`logger`** | Shared logging utility |
+| **`eslint-config`** | Shared ESLint rules — every app extends this instead of defining its own |
+| **`typescript-config`** | Shared `tsconfig.json` base configs — every app extends `base.json`, `nextjs.json`, or `react-library.json` from here |
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+---
 
-```sh
-cd my-turborepo
-turbo dev
-```
+## Root-level folders
 
-Without global `turbo`, use your package manager:
+| Folder | Purpose |
+|---|---|
+| **`infra/`** | Infrastructure and deployment configuration (hosting, CI/CD environment setup) |
+| **`scripts/`** | One-off or repo-wide helper scripts (not part of any single app) |
+| **`tests/`** | Cross-app or integration tests that don't belong to a single app |
+| **`tooling/`** | Additional shared dev tooling/config not covered by `eslint-config` or `typescript-config` |
 
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
+---
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Where do I put my code?
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+A quick decision guide:
 
-```sh
-turbo dev --filter=web
-```
+- **Building a new page on the main site?** → `apps/web/src/app`
+- **Building an admin feature?** → `apps/admin`
+- **Adding an API endpoint?** → `apps/api`
+- **Building a reusable button/card/UI piece?** → `packages/ui`
+- **Writing a function two+ apps will need?** → the relevant `packages/*` folder (or `packages/utils` if it's general-purpose)
+- **Adding a new content category (e.g. a new Games subcategory page)?** → `apps/web`, following the routing pattern already used for existing categories
+- **Changing lint/TS rules for the whole repo?** → `packages/eslint-config` or `packages/typescript-config`
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+## Conventions
 
-### Remote Caching
+- **Package manager:** `pnpm` only — do not use `npm` or `yarn`, it will break the lockfile and workspace resolution.
+- **Adding a dependency to a specific app/package:**
+  ```bash
+  pnpm add <package> --filter=web
+  ```
+- **Adding a shared dependency to the root:**
+  ```bash
+  pnpm add -w <package>
+  ```
+- Before opening a PR, run `pnpm lint` and `pnpm build` locally — Turborepo's cache makes this fast after the first run.
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+---
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## Notes
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- There's a legacy `assets/` folder at the repo root (static HTML/CSS/JS) left over from an earlier prototype, pre-dating the monorepo setup. It's not part of the active app structure — confirm with the team whether it should be migrated into `apps/web/public` or removed.
+- New to the team? Start by running `apps/web` locally and reading through `packages/ui` — most day-to-day frontend work touches both.
